@@ -1,5 +1,11 @@
 package com.Rusya2054.WeatherAPI.models;
 
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+@Data
+@Getter
 public class WeatherCoords {
 
     private final String cityName;
@@ -10,17 +16,5 @@ public class WeatherCoords {
         this.longitude = longitude;
         this.latitude = latitude;
         this.cityName = cityName;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public String getCityName() {
-        return cityName;
     }
 }

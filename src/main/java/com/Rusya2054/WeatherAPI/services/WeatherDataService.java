@@ -11,9 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,6 +21,7 @@ import java.util.Optional;
  * Service for getting information by using Weather API
  *
  */
+@Slf4j
 @Service
 public class WeatherDataService {
 
@@ -38,11 +39,17 @@ public class WeatherDataService {
         this.weatherCacheService = weatherCacheService;
     }
 
-    public ResponseEntity<Map<String, Object>> getWaitingWeatherInformation(WeatherCoords coords, String weatherAPITken) {
-        return getWaitingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPITken);
+    public ResponseEntity<Map<String, Object>> getWaitingWeatherInformation(WeatherCoords coords, String weatherAPIToken) {
+        if (weatherAPIToken == null){
+            return ResponseEntity.badRequest().body(Map.of("error", "<weatherAPIToken> is null. Please initialize <weatherAPIToken> or add <weatherAPIToken> to headers of GET request"));
+        }
+        return getWaitingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPIToken);
     }
-    public ResponseEntity<Map<String, Object>> getPollingWeatherInformation(WeatherCoords coords, String weatherAPITken) {
-        return getPollingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPITken);
+    public ResponseEntity<Map<String, Object>> getPollingWeatherInformation(WeatherCoords coords, String weatherAPIToken) {
+        if (weatherAPIToken == null){
+            return ResponseEntity.badRequest().body(Map.of("error", "<weatherAPIToken> is null. Please initialize <weatherAPIToken> or add <weatherAPIToken> to headers of GET request"));
+        }
+        return getPollingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPIToken);
     }
 
     public ResponseEntity<Map<String, Object>> getWaitingWeatherInformation(String cityName, Double latitude, Double longitude, String weatherAPIToken){
@@ -60,7 +67,7 @@ public class WeatherDataService {
                 Map<String, String> errorMessage = objectMapper.readValue(e.getResponseBodyAsString(), Map.class);
                 return ResponseEntity.badRequest().body(Map.of("error", errorMessage.get("message")));
             } catch (JsonProcessingException jpe){
-                // TODO: лог
+                log.error("Unknown JSON data format of error data in getWaitingWeatherInformation");
                 return ResponseEntity.status(500).body(Map.of("error", "Unknown JSON data format of error data"));
             }
 
@@ -71,7 +78,6 @@ public class WeatherDataService {
     }
 
     public ResponseEntity<Map<String, Object>> getPollingWeatherInformation(String cityName, Double latitude, Double longitude, String weatherAPIToken){
-        // TODO: SDK должен обрабатывать любые ошибки, которые могут возникнуть при доступе к weather API, такие как неверный ключ API, проблемы с сетью и другие.
         Optional<WeatherAPIModel> model = weatherCacheService.getData(cityName);
         if (model.isPresent()){
             return ResponseEntity.ok(getWeatherResponse(model.get()));
@@ -92,7 +98,7 @@ public class WeatherDataService {
                 Map<String, String> errorMessage = objectMapper.readValue(e.getResponseBodyAsString(), Map.class);
                 return ResponseEntity.badRequest().body(Map.of("error", errorMessage.get("message")));
             } catch (JsonProcessingException jpe){
-                // TODO: лог
+                log.error("Unknown JSON data format of error data in getPollingWeatherInformation");
                 return ResponseEntity.status(500).body(Map.of("error", "Unknown JSON data format of error data"));
             }
 
@@ -104,10 +110,7 @@ public class WeatherDataService {
 
     public boolean isValidToken(String weatherAPIToken){
         ResponseEntity<Map<String, Object>> response = getWaitingWeatherInformation("Moscow", 55.625578,37.6063916 , weatherAPIToken);
-        if (response.getStatusCode().equals(HttpStatusCode.valueOf(200))){
-            return true;
-        }
-        return false;
+        return response.getStatusCode().equals(HttpStatusCode.valueOf(200));
     }
     private Map<String, Object> getWeatherResponse(WeatherAPIModel model) {
 

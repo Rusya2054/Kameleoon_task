@@ -5,10 +5,6 @@ import com.Rusya2054.WeatherAPI.models.enums.WeatherAPIWorkMode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 

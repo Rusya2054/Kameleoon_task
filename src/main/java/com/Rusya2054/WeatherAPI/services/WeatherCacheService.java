@@ -4,8 +4,6 @@ import com.Rusya2054.WeatherAPI.models.WeatherAPIModel;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;

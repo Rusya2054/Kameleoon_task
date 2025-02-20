@@ -9,12 +9,10 @@ import com.Rusya2054.WeatherAPI.services.UserDTOService;
 import com.Rusya2054.WeatherAPI.services.WeatherDataService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,26 +53,27 @@ public class WeatherController {
 
     @GetMapping("/{cityName}")
     public ResponseEntity<Map<String, Object>> getCityWeatherData(@PathVariable String cityName, HttpServletRequest request){
-        // TODO: Проверить если не будет запущем сервис
          String clientIp = request.getRemoteAddr();
          ResponseEntity<Map<String, Object>> response = cityCoordsDataService.getCityCoords(cityName);
          if (response.getStatusCode().equals(HttpStatusCode.valueOf(400))){
              return ResponseEntity.badRequest().body(response.getBody());
          }
          if (response.getStatusCode().equals(HttpStatusCode.valueOf(500))){
-             return ResponseEntity.badRequest().body(Map.of("error", "we're in the process of fixing the mistake"));
+             log.error("error", "Error accessing the service to get the coordinates of the city. Check if the <city-coords-service> service is running");
+             return ResponseEntity.badRequest().body(Map.of("error", "Error accessing the service to get the coordinates of the city. Check if the <city-coords-service> service is running"));
          }
          UserDTO userDTO = userDTOService.getUserDTO(clientIp);
          Optional<WeatherCoords> optional = WeatherCoordsFactory.coordsOptional(response.getBody());
          if (optional.isEmpty()){
-             return ResponseEntity.badRequest().body(Map.of("error", "we're in the process of fixing the mistake"));
+             return ResponseEntity.badRequest().body(Map.of("error", "Error with the format of the returned data from the <city-coords-service> service"));
          }
          WeatherCoords weatherCoords = optional.get();
-         if (userDTO.getWeatherAPIToken() == null){
-             return weatherDataService.getWaitingWeatherInformation(weatherCoords, request.getHeader("weatherAPIToken"));
-         }
+
          if (userDTO.getWorkMode().equals(WeatherAPIWorkMode.POLLING)){
               return weatherDataService.getPollingWeatherInformation(weatherCoords, userDTO.getWeatherAPIToken());
+         }
+         if (userDTO.getWeatherAPIToken() == null){
+             return weatherDataService.getWaitingWeatherInformation(weatherCoords, request.getHeader("weatherAPIToken"));
          }
         return weatherDataService.getWaitingWeatherInformation(weatherCoords, userDTO.getWeatherAPIToken());
     }
