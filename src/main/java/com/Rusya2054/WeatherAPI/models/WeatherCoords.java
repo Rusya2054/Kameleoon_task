@@ -19,4 +19,8 @@ public class WeatherCoords {
     public Double getLongitude() {
         return longitude;
     }
+
+    public String getCityName() {
+        return cityName;
+    }
 }

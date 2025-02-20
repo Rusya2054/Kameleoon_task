@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Service for getting information by using Weather API
@@ -24,7 +25,7 @@ import java.util.Map;
 public class WeatherDataService {
 
     private final RestTemplate restTemplate;
-    private final UserDTOService userDTOService;
+    private final WeatherCacheService weatherCacheService;
 
     @Autowired
     @Value("${weather.api.src.url}")
@@ -32,21 +33,49 @@ public class WeatherDataService {
 
 
     @Autowired
-    public WeatherDataService(RestTemplate restTemplate, UserDTOService userDTOService) {
+    public WeatherDataService(RestTemplate restTemplate, WeatherCacheService weatherCacheService) {
         this.restTemplate = restTemplate;
-        this.userDTOService = userDTOService;
+        this.weatherCacheService = weatherCacheService;
     }
 
-    public Map<String, String> getSrcData(){
-        return Map.of();
+    public ResponseEntity<Map<String, Object>> getWaitingWeatherInformation(WeatherCoords coords, String weatherAPITken) {
+        return getWaitingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPITken);
+    }
+    public ResponseEntity<Map<String, Object>> getPollingWeatherInformation(WeatherCoords coords, String weatherAPITken) {
+        return getPollingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPITken);
     }
 
-    public ResponseEntity<Map<String, Object>> getWeatherInformation(WeatherCoords coords, String weatherAPITken) {
-        return getWeatherInformation(coords.getLatitude(), coords.getLongitude(), weatherAPITken);
+    public ResponseEntity<Map<String, Object>> getWaitingWeatherInformation(String cityName, Double latitude, Double longitude, String weatherAPIToken){
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+             String url = String.format("%s/weather?lat=%.2f&lon=%.2f&appid=%s",
+                           weatherInfoServiceUrl, latitude, longitude, weatherAPIToken);
+
+            WeatherAPIModel result = objectMapper.readValue(
+                    restTemplate.getForObject(url, String.class),
+                    WeatherAPIModel.class);
+            return ResponseEntity.ok(getWeatherResponse(result));
+        } catch (HttpClientErrorException e){
+            try {
+                Map<String, String> errorMessage = objectMapper.readValue(e.getResponseBodyAsString(), Map.class);
+                return ResponseEntity.badRequest().body(Map.of("error", errorMessage.get("message")));
+            } catch (JsonProcessingException jpe){
+                // TODO: лог
+                return ResponseEntity.status(500).body(Map.of("error", "Unknown JSON data format of error data"));
+            }
+
+         } catch (Exception exception) {
+             System.out.println(exception.getMessage());
+             return ResponseEntity.status(500).body(Map.of("error", "Unknown JSON data format of received data"));
+         }
     }
 
-    public ResponseEntity<Map<String, Object>> getWeatherInformation(Double latitude, Double longitude, String weatherAPIToken){
+    public ResponseEntity<Map<String, Object>> getPollingWeatherInformation(String cityName, Double latitude, Double longitude, String weatherAPIToken){
         // TODO: SDK должен обрабатывать любые ошибки, которые могут возникнуть при доступе к weather API, такие как неверный ключ API, проблемы с сетью и другие.
+        Optional<WeatherAPIModel> model = weatherCacheService.getData(cityName);
+        if (model.isPresent()){
+            return ResponseEntity.ok(getWeatherResponse(model.get()));
+        }
 
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -56,7 +85,7 @@ public class WeatherDataService {
             WeatherAPIModel result = objectMapper.readValue(
                     restTemplate.getForObject(url, String.class),
                     WeatherAPIModel.class);
-
+            weatherCacheService.updateData(cityName, result);
             return ResponseEntity.ok(getWeatherResponse(result));
         } catch (HttpClientErrorException e){
             try {
@@ -74,7 +103,7 @@ public class WeatherDataService {
     }
 
     public boolean isValidToken(String weatherAPIToken){
-        ResponseEntity<Map<String, Object>> response = getWeatherInformation(10.99, 44.34, weatherAPIToken);
+        ResponseEntity<Map<String, Object>> response = getWaitingWeatherInformation("Moscow", 55.625578,37.6063916 , weatherAPIToken);
         if (response.getStatusCode().equals(HttpStatusCode.valueOf(200))){
             return true;
         }

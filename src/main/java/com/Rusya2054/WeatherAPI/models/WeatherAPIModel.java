@@ -2,6 +2,9 @@ package com.Rusya2054.WeatherAPI.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 public class WeatherAPIModel {
@@ -47,6 +50,8 @@ public class WeatherAPIModel {
     @JsonProperty("cod")
     private int cod;
 
+    private long gettingTime = Instant.now().getEpochSecond();
+
     public int getVisibility() {
         return visibility;
     }
@@ -69,6 +74,18 @@ public class WeatherAPIModel {
 
     public String getName() {
         return name;
+    }
+
+    public void setDt(long dt) {
+        this.dt = dt;
+    }
+
+    public long getGettingTime() {
+        return gettingTime;
+    }
+
+    public void setGettingTime(long gettingTime) {
+        this.gettingTime = gettingTime;
     }
 
     public static class Coord {

@@ -1,12 +1,9 @@
 package com.Rusya2054.WeatherAPI.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -24,7 +21,7 @@ public class CityCoordsDataService {
     private final RestTemplate restTemplate;
 
     @Autowired
-    @Value("${city.coord.info.url}")
+    @Value("${city.coords.info.url}")
     private String cityCoordsInfoUrl;
 
 
@@ -39,7 +36,7 @@ public class CityCoordsDataService {
         ObjectMapper objectMapper = new ObjectMapper();
          try {
             Map<String, Object> result = objectMapper.readValue(
-                    restTemplate.getForObject(cityCoordsInfoUrl+"/geocode/"+cityName, String.class),
+                    restTemplate.getForObject(cityCoordsInfoUrl +"/geocode/"+cityName, String.class),
                     Map.class);
             return ResponseEntity.ok(result);
         } catch (HttpClientErrorException e){
