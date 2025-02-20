@@ -17,7 +17,6 @@ async def get_coordinates(city_name: str):
         'User-Agent': 'MyGeoApp/1.0'
     }
     response = requests.get(url, params=params, headers=headers)
-    print(response)
     if response.status_code != 200:
         raise HTTPException(status_code=500, detail="Error with geocoding service.")
 
