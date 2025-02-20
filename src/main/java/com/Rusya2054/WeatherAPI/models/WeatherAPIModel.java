@@ -23,6 +23,9 @@ public class WeatherAPIModel {
     @JsonProperty("wind")
     private Wind wind;
 
+    @JsonProperty("rain")
+    private Rain rain;
+
     @JsonProperty("clouds")
     private Clouds clouds;
 
@@ -148,10 +151,15 @@ public class WeatherAPIModel {
 
         @JsonProperty("deg")
         private int deg;
+        @JsonProperty("gust")
+        private double gust;
 
         public double getSpeed() {
             return speed;
         }
+    }
+
+    public static class Rain {
     }
 
     public static class Clouds {

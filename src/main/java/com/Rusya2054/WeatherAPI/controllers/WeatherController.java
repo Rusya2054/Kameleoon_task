@@ -40,14 +40,14 @@ public class WeatherController {
         // TODO: кешировать и В БД Map<Spring, ...>
         String weatherAPIToken = request.getHeader("weatherAPIToken");
         if (weatherAPIToken == null || weatherAPIToken.isEmpty()){
-            return ResponseEntity.badRequest().body(Map.of("error", "Missing or empty \"weatherAPIToken\" token in header"));
+            return ResponseEntity.badRequest().body(Map.of("error", "The <weatherAPIToken> token is missing or empty in the header. You can obtain your <weatherAPIToken> at https://openweathermap.org/api"));
         }
         String clientIp = request.getRemoteAddr();
 
         UserDTO userDTO = userDTOService.getUserDTO(clientIp);
         if (!weatherDataService.isValidToken(weatherAPIToken)){
             // TODO: скорость нужно увеличить как вариант добавить ассинхронность чтобы другие запросы потоки обрабатывали
-            return ResponseEntity.badRequest().body(Map.of("error", "weatherAPIToken is not valid"));
+            return ResponseEntity.badRequest().body(Map.of("error", "The <weatherAPIToken> is invalid. Please update your token at https://openweathermap.org/api."));
         }
         userDTO.setWeatherAPIToken(weatherAPIToken);
         return ResponseEntity.ok(Map.of("success", "token is initialised"));

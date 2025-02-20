@@ -21,18 +21,15 @@ public class UserDTOService {
         if (userDTOMap.containsKey(clientIp)){
             return userDTOMap.get(clientIp);
         }
-        UserDTO userDTO = new UserDTO();
-        userDTO.setIp(clientIp);
+        UserDTO userDTO = new UserDTO(clientIp);
         userDTO.setLastUpdatingTime();
         userDTOMap.put(clientIp, userDTO);
         return userDTO;
     }
-
-    public void updateUserDTO(){
-        // TODO: добавить в кеш
-    }
-
     public boolean verifyUserDTO(UserDTO userDTO){
-        return userDTO != null && userDTO.getIp() != null && !userDTO.getIp().isEmpty() && userDTO.getWeatherAPIToken() != null && !userDTO.getWeatherAPIToken().isEmpty();
+        if (userDTO != null && userDTO.getIp() != null && !userDTO.getIp().isEmpty() && userDTO.getWeatherAPIToken() != null && !userDTO.getWeatherAPIToken().isEmpty()){
+            return true;
+        }
+        return false;
     }
 }

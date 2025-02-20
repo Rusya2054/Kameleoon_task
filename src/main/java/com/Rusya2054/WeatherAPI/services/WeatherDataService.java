@@ -52,6 +52,7 @@ public class WeatherDataService {
         try {
              String url = String.format("%s/weather?lat=%.2f&lon=%.2f&appid=%s",
                            weatherInfoServiceUrl, latitude, longitude, weatherAPIToken);
+
             WeatherAPIModel result = objectMapper.readValue(
                     restTemplate.getForObject(url, String.class),
                     WeatherAPIModel.class);
