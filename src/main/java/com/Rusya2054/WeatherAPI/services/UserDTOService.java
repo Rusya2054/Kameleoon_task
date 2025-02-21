@@ -33,10 +33,4 @@ public class UserDTOService {
         userDTOMap.put(clientIp, userDTO);
         return userDTO;
     }
-    public boolean verifyUserDTO(UserDTO userDTO){
-        if (userDTO != null && userDTO.getIp() != null && !userDTO.getIp().isEmpty() && userDTO.getWeatherAPIToken() != null && !userDTO.getWeatherAPIToken().isEmpty()){
-            return true;
-        }
-        return false;
-    }
 }

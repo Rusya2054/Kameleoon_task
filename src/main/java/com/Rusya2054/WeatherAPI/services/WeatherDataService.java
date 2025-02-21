@@ -13,21 +13,33 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+
 /**
- * Service for getting information by using Weather API
- *
+ * Service for interacting with a weather information API, providing both "waiting" and "polling" modes of data retrieval.
+ * <p>
+ * The service fetches weather data from an external API based on geographic coordinates (latitude and longitude) or city name.
+ * The "waiting" mode retrieves fresh data each time, while the "polling" mode checks the cache first before querying the API.
+ * </p>
+ * @author Rusya2054
  */
 @Slf4j
 @Service
 public class WeatherDataService {
 
+    /**
+    * The RestTemplate used to make HTTP requests to the weather API.
+    */
     private final RestTemplate restTemplate;
+    /**
+    * Service used for caching weather data.
+    */
     private final WeatherCacheService weatherCacheService;
-
+    /**
+    * URL of the weather API, injected from application properties.
+    */
     @Autowired
     @Value("${weather.api.src.url}")
     private String weatherInfoServiceUrl;
@@ -52,6 +64,15 @@ public class WeatherDataService {
         return getPollingWeatherInformation(coords.getCityName(), coords.getLatitude(), coords.getLongitude(), weatherAPIToken);
     }
 
+    /**
+    * Retrieves weather information in "waiting" {@link com.Rusya2054.WeatherAPI.models.enums.WeatherAPIWorkMode}  mode (always fetches fresh data).
+    *
+    * @param cityName The name of the city.
+    * @param latitude The latitude of the city.
+    * @param longitude The longitude of the city.
+    * @param weatherAPIToken The API token for authenticating with the weather service.
+    * @return A {@link ResponseEntity} containing the weather data or an error message.
+    */
     public ResponseEntity<Map<String, Object>> getWaitingWeatherInformation(String cityName, Double latitude, Double longitude, String weatherAPIToken){
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -77,6 +98,15 @@ public class WeatherDataService {
          }
     }
 
+    /**
+    * Retrieves weather information in "polling"{@link com.Rusya2054.WeatherAPI.models.enums.WeatherAPIWorkMode} mode (checks cache first, fetches from API if not cached).
+    *
+    * @param cityName The name of the city.
+    * @param latitude The latitude of the city.
+    * @param longitude The longitude of the city.
+    * @param weatherAPIToken The API token for authenticating with the weather service.
+    * @return A {@link ResponseEntity} containing the weather data or an error message.
+    */
     public ResponseEntity<Map<String, Object>> getPollingWeatherInformation(String cityName, Double latitude, Double longitude, String weatherAPIToken){
         Optional<WeatherAPIModel> model = weatherCacheService.getData(cityName);
         if (model.isPresent()){
@@ -108,6 +138,12 @@ public class WeatherDataService {
          }
     }
 
+     /**
+     * Verifies if the provided <weatherAPIToken> token is valid by checking the weather data for a default city (Moscow).
+     *
+     * @param weatherAPIToken The API token to verify.
+     * @return {@code true} if the token is valid, {@code false} otherwise.
+     */
     public boolean isValidToken(String weatherAPIToken){
         ResponseEntity<Map<String, Object>> response = getWaitingWeatherInformation("Moscow", 55.625578,37.6063916 , weatherAPIToken);
         return response.getStatusCode().equals(HttpStatusCode.valueOf(200));
@@ -125,22 +161,5 @@ public class WeatherDataService {
                 "name", model.getName()
         );
         return response;
-
-    }
-
-    public static Map<String, String> serializeMap(Map<String, Object> originalMap) throws Exception {
-        Map<String, String> result = new HashMap<>();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        for (Map.Entry<String, Object> entry : originalMap.entrySet()) {
-            if (entry.getValue() instanceof Map) {
-                String serializedValue = objectMapper.writeValueAsString(entry.getValue());
-                result.put(entry.getKey(), serializedValue);
-            } else {
-                result.put(entry.getKey(), entry.getValue().toString());
-            }
-        }
-
-        return result;
     }
 }

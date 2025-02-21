@@ -12,7 +12,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 /**
- * Service for getting information about <code>UserDTO by API. Made by python FastAPI</code>
+ * Service for getting information from <city-coord-service>.
+ * Sending data service is made on fastAPI
  * @Author Rusya2054
  */
 @Service
@@ -24,7 +25,6 @@ public class CityCoordsDataService {
     @Value("${city.coords.info.url}")
     private String cityCoordsInfoUrl;
 
-
     @Autowired
     public CityCoordsDataService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -32,7 +32,6 @@ public class CityCoordsDataService {
 
 
     public ResponseEntity<Map<String, Object>> getCityCoords(String cityName) {
-        // TODO: долго работает, нужно добавить ассинхронность
         ObjectMapper objectMapper = new ObjectMapper();
          try {
             Map<String, Object> result = objectMapper.readValue(

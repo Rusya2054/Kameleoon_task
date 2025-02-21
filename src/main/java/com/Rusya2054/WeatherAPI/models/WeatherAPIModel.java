@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Class is responsible for the received data model.
+ * @author Rusya2054
+ */
 public class WeatherAPIModel {
     @JsonProperty("coord")
     private Coord coord;

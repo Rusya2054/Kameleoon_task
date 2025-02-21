@@ -4,6 +4,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ *
+ */
 @Data
 @Getter
 public class WeatherCoords {

@@ -17,6 +17,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Main class responce for mapping GET requests
+ *
+ * @author Rusya2054
+ */
 @Slf4j
 @RestController
 @RequestMapping("data")
@@ -48,7 +53,7 @@ public class WeatherController {
             return ResponseEntity.badRequest().body(Map.of("error", "The <weatherAPIToken> is invalid. Please update your token at https://openweathermap.org/api."));
         }
         userDTO.setWeatherAPIToken(weatherAPIToken);
-        return ResponseEntity.ok(Map.of("success", "token is initialised"));
+        return ResponseEntity.ok(Map.of("success", "Token is initialised", "mode", userDTO.getWorkMode().getDescription()));
     }
 
     @GetMapping("/{cityName}")
