@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  city-coords-service:
+    build: /city_coords_service/.
+    ports:
+      - "8282:8282"
+  weather-sdk:
+    build: /.
+    depends_on:
+      - city-coords-service
+    ports:
+      - "8585:8585"
+#    environment:
+#      - CITY_COORDS_SERVICE_URL=http://city-coords-service:8282

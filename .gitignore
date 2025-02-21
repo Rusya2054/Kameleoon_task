@@ -1,10 +1,16 @@
 HELP.md
-target/
+!target/**/*.jar
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+
+target/
+logs/
 
 .env
+city_coords_service/.idea
+city_coords_service/__pycache__
+*.txt
+*.docx
+*.pdf
 
 ### STS ###
 .apt_generated
