@@ -2,13 +2,16 @@ package com.Rusya2054.WeatherAPI.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLEngineResult;
 import java.util.Map;
 
 /**
@@ -30,6 +33,14 @@ public class CityCoordsDataService {
         this.restTemplate = restTemplate;
     }
 
+
+    @PostConstruct
+    private void checkCityCoordsServiceIsWorking(){
+        ResponseEntity<Map<String, Object>> entity = getCityCoords("Moscow");
+        if (!entity.getStatusCode().equals(HttpStatus.OK)){
+             throw new IllegalStateException("Project build error, service <city-coords-service> is not working.");
+        }
+    }
 
     public ResponseEntity<Map<String, Object>> getCityCoords(String cityName) {
         ObjectMapper objectMapper = new ObjectMapper();
