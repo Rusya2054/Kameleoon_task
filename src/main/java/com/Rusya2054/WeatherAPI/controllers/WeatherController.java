@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Main class responce for mapping GET requests
@@ -57,9 +59,14 @@ public class WeatherController {
     }
 
     @GetMapping("/{cityName}")
-    public ResponseEntity<Map<String, Object>> getCityWeatherData(@PathVariable String cityName, HttpServletRequest request){
+    public ResponseEntity<Map<String, Object>> getCityWeatherData(@PathVariable String cityName, HttpServletRequest request) throws ExecutionException, InterruptedException {
          String clientIp = request.getRemoteAddr();
-         ResponseEntity<Map<String, Object>> response = cityCoordsDataService.getCityCoords(cityName);
+         CompletableFuture<ResponseEntity<Map<String, Object>>> cityCoordsFuture = CompletableFuture.supplyAsync(() ->
+                 cityCoordsDataService.getCityCoords(cityName));
+
+
+         UserDTO userDTO = userDTOService.getUserDTO(clientIp);
+         ResponseEntity<Map<String, Object>> response = cityCoordsFuture.get();
          if (response.getStatusCode().equals(HttpStatusCode.valueOf(400))){
              return ResponseEntity.badRequest().body(response.getBody());
          }
@@ -67,7 +74,7 @@ public class WeatherController {
              log.error("error", "Error accessing the service to get the coordinates of the city. Check if the <city-coords-service> service is running");
              return ResponseEntity.badRequest().body(Map.of("error", "Error accessing the service to get the coordinates of the city. Check if the <city-coords-service> service is running"));
          }
-         UserDTO userDTO = userDTOService.getUserDTO(clientIp);
+
          Optional<WeatherCoords> optional = WeatherCoordsFactory.coordsOptional(response.getBody());
          if (optional.isEmpty()){
              return ResponseEntity.badRequest().body(Map.of("error", "Error with the format of the returned data from the <city-coords-service> service"));
