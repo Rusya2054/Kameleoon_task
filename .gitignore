@@ -7,8 +7,8 @@ logs/
 
 .env
 city_coords_service/.idea
+!city_coords_service/requirements.txt
 city_coords_service/__pycache__
-*.txt
 *.docx
 *.pdf
 
